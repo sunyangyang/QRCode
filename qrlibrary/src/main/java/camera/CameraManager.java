@@ -326,4 +326,8 @@ public final class CameraManager {
                                         width, height, false);
   }
 
+  public OpenCamera getOpenCamera() {
+    return camera;
+  }
+
 }

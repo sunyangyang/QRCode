@@ -63,6 +63,7 @@ public final class QRFragment extends Fragment implements SurfaceHolder.Callback
     public static final int DECODE = 3;
     public static final int DECODE_FAILED = 4;
     public static final int QUIT = 5;
+    public static final int ZOOM_CHANGE = 6;
     private ResultListener mListener;
 
     public QRFragment() {
