@@ -1,1 +1,1 @@
-include ':app', ':qrlibrary'
+include ':app', ':qrlibrary', ':zbar'

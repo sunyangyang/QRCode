@@ -173,24 +173,12 @@ final class CameraConfigurationManager {
     }
   }
 
-  Point getBestPreviewSize() {
-    return bestPreviewSize;
-  }
-
-  Point getPreviewSizeOnScreen() {
-    return previewSizeOnScreen;
-  }
-
   Point getCameraResolution() {
     return cameraResolution;
   }
 
   Point getScreenResolution() {
     return screenResolution;
-  }
-
-  int getCWNeededRotation() {
-    return cwNeededRotation;
   }
 
   boolean getTorchState(Camera camera) {

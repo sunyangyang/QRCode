@@ -55,6 +55,7 @@ final class DecodeHandler extends Handler {
     private final MultiFormatReader multiFormatReader;
     private boolean running = true;
     private Map<DecodeHintType, Object> mHints;
+    private int mChange = 1;
 
     DecodeHandler(QRFragment fragment, Map<DecodeHintType, Object> hints) {
         mHints = new Hashtable<>();
@@ -77,6 +78,28 @@ final class DecodeHandler extends Handler {
             case QUIT:
                 running = false;
                 Looper.myLooper().quit();
+                break;
+            case ZOOM_CHANGE:
+                Camera camera = (Camera) message.obj;
+                Camera.Parameters parameters = camera.getParameters();
+                int zoom = message.arg1;
+                int maxZoom = message.arg2;
+                mChange++;
+                zoom += mChange;
+                parameters.setZoom(zoom);
+                camera.setParameters(parameters);
+                if (zoom < maxZoom / 4) {
+                    Message message1 = new Message();
+                    message1.what = ZOOM_CHANGE;
+                    message1.arg1 = zoom;
+                    message1.arg2 = maxZoom;
+                    message1.obj = camera;
+                    sendMessageDelayed(message1, 40);
+                } else {
+                    Message message1 = Message.obtain(mFragment.getHandler(), DECODE_FAILED);
+                    message1.sendToTarget();
+                }
+
                 break;
         }
     }
@@ -118,24 +141,40 @@ final class DecodeHandler extends Handler {
                     int zoom = parameters.getZoom();
                     if (parameters.isZoomSupported()) {
                         ResultPoint[] points = rawResult.getResultPoints();
-                        float point1X = points[0].getX();
-                        float point1Y = points[0].getY();
-                        float point2X = points[1].getX();
-                        float point2Y = points[1].getY();
-                        int len = (int) Math.sqrt(Math.pow(point1X - point2X, 2) + Math.pow(point1Y - point2Y, 2));
-                        if (len <= rect.width() / 4) {
-                            if (zoom == 0) {
-                                zoom = maxZoom * 4;
-                            } else {
-                                zoom = zoom + 10;
-                            }
+                        float pointY = points[0].getX();
+                        float pointX = points[0].getY();
+                        float point2Y = points[2].getX();
+                        float point2X = points[2].getY();
+//                        for (int i = 0; i < points.length; i++) {
+//                            Log.e("XXXXX", "i = " + i + ", x = " + points[i].getX() + ", y = " + points[i].getY());
+//                        }
+//                        Log.e("XXXXX", "pointX = " + pointX + ", pointY = " + pointY + ", point2X = " + point2X + ", point2Y = " + point2Y +
+//                        ", rect = " + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom);
+//                        Log.e("XXXXX", "isInRect(point1X, point1Y, point2X, point2Y, rect) = " + isInRect(pointX, pointY, point2X, point2Y, rect));
+                        int len = Math.max((int)Math.abs(pointX - point2X), (int)Math.abs(pointY - point2Y));
+                        if (len <= rect.width() / 4 && isInRect(pointX, pointY, point2X, point2Y, rect)) {
+//                            if (zoom == 0) {
+//                                zoom = maxZoom / 4;
+//                            } else {
+                                zoom++;
+//                            }
+                            mChange = 1;
                             if (zoom > maxZoom) {
                                 zoom = maxZoom;
                             }
-                            parameters.setZoom(zoom);
-                            camera.setParameters(parameters);
-                            Message message = Message.obtain(handler, DECODE_FAILED);
-                            message.sendToTarget();
+                            if (zoom < maxZoom / 4) {
+                                Message message = new Message();
+                                message.what = ZOOM_CHANGE;
+                                message.arg1 = zoom;
+                                message.arg2 = maxZoom;
+                                message.obj = camera;
+                                sendMessageDelayed(message, 100);
+                            } else {
+                                parameters.setZoom(zoom);
+                                camera.setParameters(parameters);
+                                Message message = Message.obtain(handler, DECODE_FAILED);
+                                message.sendToTarget();
+                            }
                         } else {
                             Message message = Message.obtain(handler, DECODE_SUCCEEDED, rawResult);
                             Bundle bundle = new Bundle();
@@ -175,6 +214,16 @@ final class DecodeHandler extends Handler {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
         bundle.putByteArray(DecodeThread.BARCODE_BITMAP, out.toByteArray());
         bundle.putFloat(DecodeThread.BARCODE_SCALED_FACTOR, (float) width / source.getWidth());
+    }
+
+    private static boolean isInRect(float x1, float y1, float x2, float y2, Rect rect) {
+        if (rect.left < x1 && x1 < rect.right &&
+                rect.left < x2 && x2 < rect.right &&
+                rect.top < y1 && y1 < rect.bottom &&
+                rect.top < y2 && y2 < rect.bottom) {
+            return true;
+        }
+        return false;
     }
 
 }
