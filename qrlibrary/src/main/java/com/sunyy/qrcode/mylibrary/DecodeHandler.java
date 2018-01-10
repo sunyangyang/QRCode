@@ -114,6 +114,7 @@ final class DecodeHandler extends Handler {
      */
     private void decode(byte[] data, int width, int height) {
         long start = System.currentTimeMillis();
+        Log.e("XXXXX", "start = " + start);
         Result rawResult = null;
         PlanarYUVLuminanceSource source = mFragment.getCameraManager().buildLuminanceSource(data, width, height);
         if (source != null) {
@@ -141,6 +142,7 @@ final class DecodeHandler extends Handler {
                     int zoom = parameters.getZoom();
                     if (parameters.isZoomSupported()) {
                         ResultPoint[] points = rawResult.getResultPoints();
+                        //相机默认取得横屏
                         float pointY = points[0].getX();
                         float pointX = points[0].getY();
                         float point2Y = points[2].getX();
