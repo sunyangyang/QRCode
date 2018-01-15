@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="qr">
+        <attr name="width"></attr>
+        <attr name="bg_color"></attr>
+        <attr name="slide_bitmap" format="integer"></attr>
+        <attr name="line_bitmap" format="integer"></attr>
+    </declare-styleable>
+</resources>

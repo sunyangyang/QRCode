@@ -18,6 +18,9 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
+        maven { url "https://dl.bintray.com/hyena/maven/" }
+        maven { url "http://mvn.gt.igexin.com/nexus/content/repositories/releases/"}
         jcenter()
     }
 }

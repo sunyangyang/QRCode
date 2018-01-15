@@ -1,13 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.sunyy.qrcode.qrcode.MainActivity">
+    android:background="@android:color/transparent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></LinearLayout>
     <LinearLayout
         android:id="@+id/container"
         android:orientation="vertical"
+        android:background="@android:color/transparent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></LinearLayout>
-
+        android:layout_height="match_parent">
+    </LinearLayout>
+    <com.sunyy.qrcode.qrcode.QRView
+        android:id="@+id/qr_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <LinearLayout
+        android:id="@+id/layout_title"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:paddingLeft="19dp"
+            android:paddingRight="19dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="登录网页版"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/bg_scan_title"
+            android:textColor="#afafaf"
+            android:textSize="12sp"
+            android:id="@+id/txt_title"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:text="网页地址"
+            android:layout_marginTop="13dp"
+            android:textColor="#ffffff"
+            android:textSize="12sp"
+            android:id="@+id/txt_sub_title"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </RelativeLayout>

@@ -50,7 +50,8 @@ public final class CaptureActivityHandler extends Handler {
   private static final String TAG = CaptureActivityHandler.class.getSimpleName();
 
   private final Activity activity;
-  private final QRFragment mFragment;
+  private QRFragment mFragment = null;
+  private QRCommonFragment mCommonFragment = null;
   private final DecodeThread decodeThread;
   private State state;
   private final CameraManager cameraManager;
@@ -80,6 +81,25 @@ public final class CaptureActivityHandler extends Handler {
     restartPreviewAndDecode();
   }
 
+  CaptureActivityHandler(Activity activity,
+                         QRCommonFragment fragment,
+                         Collection<BarcodeFormat> decodeFormats,
+                         Map<DecodeHintType,?> baseHints,
+                         String characterSet,
+                         CameraManager cameraManager) {
+    this.activity = activity;
+    this.mCommonFragment = fragment;
+    decodeThread = new DecodeThread(fragment, decodeFormats, baseHints, characterSet,
+            new ViewfinderResultPointCallback(mCommonFragment.getViewfinderView()));
+    decodeThread.start();
+    state = State.SUCCESS;
+
+    // Start ourselves capturing previews and decoding.
+    this.cameraManager = cameraManager;
+    cameraManager.startPreview();
+    restartPreviewAndDecode();
+  }
+
   @Override
   public void handleMessage(Message message) {
     switch (message.what) {
@@ -100,7 +120,12 @@ public final class CaptureActivityHandler extends Handler {
           }
           scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);          
         }
-        mFragment.handleDecode((Result) message.obj, barcode, scaleFactor);
+        if (mFragment != null) {
+          mFragment.handleDecode((Result) message.obj, barcode, scaleFactor);
+        } else if (mCommonFragment != null) {
+          mCommonFragment.handleDecode((Result) message.obj, barcode, scaleFactor);
+        }
+
         break;
       case DECODE_FAILED:
         // We're decoding as fast as possible, so when one decode fails, start another.
@@ -168,7 +193,12 @@ public final class CaptureActivityHandler extends Handler {
     if (state == State.SUCCESS) {
       state = State.PREVIEW;
       cameraManager.requestPreviewFrame(decodeThread.getHandler(), DECODE);
-      mFragment.drawViewfinder();
+      if (mFragment != null) {
+        mFragment.drawViewfinder();
+      } else if (mCommonFragment != null) {
+        mCommonFragment.drawViewfinder();
+      }
+
     }
   }
 

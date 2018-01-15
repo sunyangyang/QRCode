@@ -76,6 +76,11 @@ public final class ViewfinderView extends View {
     lastPossibleResultPoints = null;
   }
 
+  @Override
+  public void setVisibility(int visibility) {
+    super.setVisibility(visibility);
+  }
+
   public void setCameraManager(CameraManager cameraManager) {
     this.cameraManager = cameraManager;
   }

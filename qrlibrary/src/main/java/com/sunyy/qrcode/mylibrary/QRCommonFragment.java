@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2008 ZXing authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.sunyy.qrcode.mylibrary;
 
 import android.app.Activity;
@@ -26,9 +10,12 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -37,8 +24,6 @@ import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ResultParser;
-import com.hyena.framework.app.fragment.BaseUIFragment;
-import com.hyena.framework.app.fragment.BaseUIFragmentHelper;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -47,7 +32,11 @@ import java.util.Map;
 
 import camera.CameraManager;
 
-public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements SurfaceHolder.Callback {
+/**
+ * Created by sunyangyang on 2018/1/15.
+ */
+
+public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback {
 
     private static final String TAG = QRFragment.class.getSimpleName();
 
@@ -63,7 +52,7 @@ public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> imple
     public static final int ZOOM_CHANGE = 6;
     private ResultListener mListener;
 
-    public QRFragment() {
+    public QRCommonFragment() {
 
     }
 
@@ -115,8 +104,8 @@ public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> imple
     }
 
     @Override
-    public void onCreateImpl(Bundle icicle) {
-        super.onCreateImpl(icicle);
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
 //    Window window = getWindow();
 //    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -130,14 +119,15 @@ public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> imple
     }
 
     @Override
-    public View onCreateViewImpl(Bundle savedInstanceState) {
-        mContentView = View.inflate(mContext, R.layout.capture, null);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        mContentView = inflater.inflate(R.layout.capture, container, false);
         return mContentView;
     }
 
     @Override
-    public void onResumeImpl() {
-        super.onResumeImpl();
+    public void onResume() {
+        super.onResume();
 
         // historyManager must be initialized here to update the history preference
 
@@ -209,7 +199,7 @@ public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> imple
     }
 
     @Override
-    public void onPauseImpl() {
+    public void onPause() {
         if (handler != null) {
             handler.quitSynchronously();
             handler = null;
@@ -223,13 +213,13 @@ public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> imple
             SurfaceHolder surfaceHolder = surfaceView.getHolder();
             surfaceHolder.removeCallback(this);
         }
-        super.onPauseImpl();
+        super.onPause();
     }
 
     @Override
-    public void onDestroyImpl() {
+    public void onDestroy() {
         inactivityTimer.shutdown();
-        super.onDestroyImpl();
+        super.onDestroy();
     }
 
     private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {

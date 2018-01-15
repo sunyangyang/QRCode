@@ -39,7 +39,8 @@ final class DecodeThread extends Thread {
   public static final String BARCODE_BITMAP = "barcode_bitmap";
   public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
 
-  private final QRFragment mFragment;
+  private QRFragment mFragment;
+  private QRCommonFragment mCommonFragment;
   private final Map<DecodeHintType,Object> hints;
   private Handler handler;
   private final CountDownLatch handlerInitLatch;
@@ -51,6 +52,34 @@ final class DecodeThread extends Thread {
                ResultPointCallback resultPointCallback) {
 
     this.mFragment = fragment;
+    handlerInitLatch = new CountDownLatch(1);
+
+    hints = new EnumMap<>(DecodeHintType.class);
+    if (baseHints != null) {
+      hints.putAll(baseHints);
+    }
+
+    // The prefs can't change while the thread is running, so pick them up once here.
+    if (decodeFormats == null || decodeFormats.isEmpty()) {
+      decodeFormats = EnumSet.noneOf(BarcodeFormat.class);
+      decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+    }
+    hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
+
+    if (characterSet != null) {
+      hints.put(DecodeHintType.CHARACTER_SET, characterSet);
+    }
+    hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, resultPointCallback);
+    LogUtils.i("DecodeThread", "Hints: " + hints);
+  }
+
+  DecodeThread(QRCommonFragment fragment,
+               Collection<BarcodeFormat> decodeFormats,
+               Map<DecodeHintType,?> baseHints,
+               String characterSet,
+               ResultPointCallback resultPointCallback) {
+
+    this.mCommonFragment = fragment;
     handlerInitLatch = new CountDownLatch(1);
 
     hints = new EnumMap<>(DecodeHintType.class);
@@ -84,7 +113,13 @@ final class DecodeThread extends Thread {
   @Override
   public void run() {
     Looper.prepare();
-    handler = new DecodeHandler(mFragment, hints);
+    if (mFragment != null) {
+      handler = new DecodeHandler(mFragment, hints);
+    } else if (mCommonFragment != null) {
+      handler = new DecodeHandler(mCommonFragment, hints);
+    }
+
+
     handlerInitLatch.countDown();
     Looper.loop();
   }

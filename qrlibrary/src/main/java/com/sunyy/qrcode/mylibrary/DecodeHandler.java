@@ -51,7 +51,8 @@ final class DecodeHandler extends Handler {
 
     private static final String TAG = DecodeHandler.class.getSimpleName();
 
-    private final QRFragment mFragment;
+    private QRFragment mFragment;
+    private QRCommonFragment mCommonFragment;
     private final MultiFormatReader multiFormatReader;
     private boolean running = true;
     private Map<DecodeHintType, Object> mHints;
@@ -64,6 +65,15 @@ final class DecodeHandler extends Handler {
         multiFormatReader = new MultiFormatReader();
         multiFormatReader.setHints(mHints);
         this.mFragment = fragment;
+    }
+
+    DecodeHandler(QRCommonFragment fragment, Map<DecodeHintType, Object> hints) {
+        mHints = new Hashtable<>();
+        mHints.put(DecodeHintType.CHARACTER_SET, "utf-8");
+        mHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        multiFormatReader = new MultiFormatReader();
+        multiFormatReader.setHints(mHints);
+        this.mCommonFragment = fragment;
     }
 
     @Override
@@ -96,7 +106,12 @@ final class DecodeHandler extends Handler {
                     message1.obj = camera;
                     sendMessageDelayed(message1, 40);
                 } else {
-                    Message message1 = Message.obtain(mFragment.getHandler(), DECODE_FAILED);
+                    Message message1;
+                    if (mFragment != null) {
+                        message1 = Message.obtain(mFragment.getHandler(), DECODE_FAILED);
+                    } else {
+                        message1 = Message.obtain(mCommonFragment.getHandler(), DECODE_FAILED);
+                    }
                     message1.sendToTarget();
                 }
 
@@ -114,9 +129,15 @@ final class DecodeHandler extends Handler {
      */
     private void decode(byte[] data, int width, int height) {
         long start = System.currentTimeMillis();
-        Log.e("XXXXX", "start = " + start);
+//        Log.e("XXXXX", "start = " + start);
         Result rawResult = null;
-        PlanarYUVLuminanceSource source = mFragment.getCameraManager().buildLuminanceSource(data, width, height);
+        PlanarYUVLuminanceSource source;
+        if (mFragment != null) {
+            source = mFragment.getCameraManager().buildLuminanceSource(data, width, height);
+        } else {
+            source = mCommonFragment.getCameraManager().buildLuminanceSource(data, width, height);
+        }
+
         if (source != null) {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
             try {
@@ -128,15 +149,33 @@ final class DecodeHandler extends Handler {
             }
         }
 
-        Handler handler = mFragment.getHandler();
+        Handler handler;
+        if (mFragment != null) {
+            handler = mFragment.getHandler();
+        } else {
+            handler = mCommonFragment.getHandler();
+        }
+
         if (rawResult != null) {
             // Don't log the barcode contents for security.
             long end = System.currentTimeMillis();
             LogUtils.d(TAG, "Found barcode in " + (end - start) + " ms");
             if (handler != null) {
-                Rect rect = mFragment.getCameraManager().getFramingRect();
+                Rect rect;
+                if (mFragment != null) {
+                    rect = mFragment.getCameraManager().getFramingRect();
+                } else {
+                    rect = mCommonFragment.getCameraManager().getFramingRect();
+                }
+
                 if (rect != null) {
-                    Camera camera = mFragment.getCameraManager().getOpenCamera().getCamera();
+                    Camera camera;
+                    if (mFragment != null) {
+                        camera = mFragment.getCameraManager().getOpenCamera().getCamera();
+                    } else {
+                        camera = mCommonFragment.getCameraManager().getOpenCamera().getCamera();
+                    }
+
                     Camera.Parameters parameters = camera.getParameters();
                     int maxZoom = parameters.getMaxZoom();
                     int zoom = parameters.getZoom();
