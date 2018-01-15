@@ -32,10 +32,14 @@ import java.util.Map;
 
 import camera.CameraManager;
 
+import static com.sunyy.qrcode.mylibrary.QRFragment.DECODE_SUCCEEDED;
+import static com.sunyy.qrcode.mylibrary.QRFragment.RESTART_PREVIEW;
+import static com.sunyy.qrcode.mylibrary.QRFragment.RETURN_SCAN_RESULT;
+
 /**
+ * 引用普通的fragment
  * Created by sunyangyang on 2018/1/15.
  */
-
 public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback {
 
     private static final String TAG = QRFragment.class.getSimpleName();
@@ -43,13 +47,6 @@ public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback
     private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 1500L;
     private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
 
-    public static final int RESTART_PREVIEW = 0;
-    public static final int RETURN_SCAN_RESULT = 1;
-    public static final int DECODE_SUCCEEDED = 2;
-    public static final int DECODE = 3;
-    public static final int DECODE_FAILED = 4;
-    public static final int QUIT = 5;
-    public static final int ZOOM_CHANGE = 6;
     private ResultListener mListener;
 
     public QRCommonFragment() {

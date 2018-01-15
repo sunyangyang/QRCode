@@ -47,6 +47,10 @@ import java.util.Map;
 
 import camera.CameraManager;
 
+/**
+ * 引用专用的fragment
+ */
+
 public final class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements SurfaceHolder.Callback {
 
     private static final String TAG = QRFragment.class.getSimpleName();
