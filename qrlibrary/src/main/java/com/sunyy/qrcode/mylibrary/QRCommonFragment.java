@@ -267,37 +267,28 @@ public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         inactivityTimer.onActivity();
 
-        if (mListener != null) {
-            mListener.getResult(rawResult.getText());
+        ParsedResult result = ResultParser.parseResult(rawResult);
+        boolean fromLiveScan = barcode != null;
+        if (fromLiveScan) {
+            // Then not from history, so beep/vibrate and we have an image to draw on
+            beepManager.playBeepSoundAndVibrate();
+            drawResultPoints(barcode, scaleFactor, rawResult);
         }
-//        restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-
-//        ParsedResult result = ResultParser.parseResult(rawResult);
-//        boolean fromLiveScan = barcode != null;
-//        if (fromLiveScan) {
-//            // Then not from history, so beep/vibrate and we have an image to draw on
-//            beepManager.playBeepSoundAndVibrate();
-//            drawResultPoints(barcode, scaleFactor, rawResult);
-//        }
-////
-//        switch (source) {
-//            case NATIVE_APP_INTENT:
-//                handleDecodeExternally(rawResult, barcode);
-//                break;
-//            case NONE:
-//                if (fromLiveScan) {
-////                    Toast.makeText(mContext, rawResult.getText(),
-////                            Toast.LENGTH_LONG).show();
-//                    if (mListener != null) {
-//                        mListener.getResult(rawResult);
-//                    }
-//                    // Wait a moment or else it will scan the same barcode continuously about 3 times
-//                    restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-//                } else {
-//                    handleDecodeInternally(rawResult, result, barcode);
-//                }
-//                break;
-//        }
+//
+        switch (source) {
+            case NATIVE_APP_INTENT:
+                handleDecodeExternally(rawResult, barcode);
+                break;
+            case NONE:
+                if (fromLiveScan) {
+                    if (mListener != null) {
+                        mListener.getResult(rawResult.getText());
+                    }
+                } else {
+                    handleDecodeInternally(rawResult, result, barcode);
+                }
+                break;
+        }
     }
 
     /**
