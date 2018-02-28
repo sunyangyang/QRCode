@@ -179,10 +179,14 @@ final class DecodeHandler extends Handler {
                     int zoom = parameters.getZoom();
                     if(parameters.isZoomSupported()) {
                         ResultPoint[] points = rawResult.getResultPoints();
+                        int pos = 1;
                         float pointY = points[0].getX();
                         float pointX = points[0].getY();
-                        float point2Y = points[2].getX();
-                        float point2X = points[2].getY();
+                        if (points.length > 2) {
+                            pos = 2;
+                        }
+                        float point2Y = points[pos].getX();
+                        float point2X = points[pos].getY();
                         int len = Math.max((int)Math.abs(pointX - point2X), (int)Math.abs(pointY - point2Y));
                         Message message;
                         if(len <= rect.width() / 4 && isInRect(pointX, pointY, point2X, point2Y, rect)) {
