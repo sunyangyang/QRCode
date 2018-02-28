@@ -4,6 +4,8 @@ import android.graphics.Rect;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -14,7 +16,7 @@ import com.hyena.framework.app.activity.NavigateActivity;
 import com.sunyy.qrcode.mylibrary.QRFragment;
 import com.sunyy.qrcode.mylibrary.ResultListener;
 
-public class MainActivity extends NavigateActivity implements ResultListener {
+public class MainActivity extends NavigateActivity {
     private QRFragment mFragment;
     private QRView mQRView;
     private LinearLayout mLayout;
@@ -41,12 +43,11 @@ public class MainActivity extends NavigateActivity implements ResultListener {
     }
 
     @Override
-    public void getResult(String result) {
-        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public int setViewVisible() {
-        return View.GONE;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

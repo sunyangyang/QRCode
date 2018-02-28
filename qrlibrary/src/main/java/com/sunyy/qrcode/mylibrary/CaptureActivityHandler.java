@@ -107,23 +107,24 @@ public final class CaptureActivityHandler extends Handler {
         restartPreviewAndDecode();
         break;
       case DECODE_SUCCEEDED:
-        state = State.SUCCESS;
+        this.state = State.SUCCESS;
         Bundle bundle = message.getData();
         Bitmap barcode = null;
-        float scaleFactor = 1.0f;
-        if (bundle != null) {
-          byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
-          if (compressedBitmap != null) {
-            barcode = BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, null);
-            // Mutable copy:
+        float scaleFactor = 1.0F;
+        if(bundle != null) {
+          byte[] compressedBitmap = bundle.getByteArray("barcode_bitmap");
+          if(compressedBitmap != null) {
+            barcode = BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, (BitmapFactory.Options)null);
             barcode = barcode.copy(Bitmap.Config.ARGB_8888, true);
           }
-          scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);          
+
+          scaleFactor = bundle.getFloat("barcode_scaled_factor");
         }
-        if (mFragment != null) {
-          mFragment.handleDecode((Result) message.obj, barcode, scaleFactor);
-        } else if (mCommonFragment != null) {
-          mCommonFragment.handleDecode((Result) message.obj, barcode, scaleFactor);
+
+        if(this.mFragment != null) {
+          this.mFragment.handleDecode((Result)message.obj, barcode, scaleFactor);
+        } else if(this.mCommonFragment != null) {
+          this.mCommonFragment.handleDecode((Result)message.obj, barcode, scaleFactor);
         }
 
         break;

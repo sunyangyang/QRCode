@@ -26,6 +26,8 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -51,7 +53,7 @@ import camera.CameraManager;
  * 引用专用的fragment
  */
 
-public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements SurfaceHolder.Callback {
+public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements SurfaceHolder.Callback, ResultListener {
 
     private static final String TAG = QRFragment.class.getSimpleName();
 
@@ -100,7 +102,7 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
         return handler;
     }
 
-    CameraManager getCameraManager() {
+    public CameraManager getCameraManager() {
         return cameraManager;
     }
 
@@ -125,7 +127,6 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
 //    Window window = getWindow();
 //    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 //    setContentView(R.layout.capture);
-
         hasSurface = false;
         inactivityTimer = new InactivityTimer(mContext);
         beepManager = new BeepManager(mContext);
@@ -142,7 +143,9 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
     @Override
     public void onResumeImpl() {
         super.onResumeImpl();
-
+        if (mListener == null) {
+            mListener = this;
+        }
         // historyManager must be initialized here to update the history preference
 
         // CameraManager must be initialized here, not in onCreate(). This is necessary because we don't
@@ -197,7 +200,6 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
             }
 
             characterSet = bundle.getString(Intents.Scan.CHARACTER_SET);
-
         }
 
         SurfaceView surfaceView = (SurfaceView) mContentView.findViewById(R.id.preview_view);
@@ -210,6 +212,15 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
             // Install the callback and wait for surfaceCreated() to init the camera.
             surfaceHolder.addCallback(this);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            finish();
+            return false;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -282,6 +293,11 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         inactivityTimer.onActivity();
+//        if (mListener != null) {
+//            mListener.getResult(rawResult.getText());
+//        }
+//        restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+        // Wait a moment or else it will scan the same barcode continuously about 3 times
         lastResult = rawResult;
         ParsedResult result = ResultParser.parseResult(rawResult);
         boolean fromLiveScan = barcode != null;
@@ -303,7 +319,7 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
                         mListener.getResult(rawResult.getText());
                     }
                     // Wait a moment or else it will scan the same barcode continuously about 3 times
-                    restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+//                    restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
                 } else {
                     handleDecodeInternally(rawResult, result, barcode);
                 }
@@ -504,5 +520,15 @@ public class QRFragment extends BaseUIFragment<BaseUIFragmentHelper> implements 
 
     public void drawViewfinder() {
         viewfinderView.drawViewfinder();
+    }
+
+    @Override
+    public void getResult(String result) {
+        LogUtils.e("XXXXX", "result = " + result);
+    }
+
+    @Override
+    public int setViewVisible() {
+        return View.GONE;
     }
 }

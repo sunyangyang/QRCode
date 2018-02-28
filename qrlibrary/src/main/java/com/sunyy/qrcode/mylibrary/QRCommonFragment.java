@@ -119,6 +119,7 @@ public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.capture, container, false);
+        mContentView.findViewById(R.id.viewfinder_view).setVisibility(View.VISIBLE);
         return mContentView;
     }
 
@@ -265,33 +266,38 @@ public class QRCommonFragment extends Fragment implements SurfaceHolder.Callback
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         inactivityTimer.onActivity();
-        lastResult = rawResult;
-        ParsedResult result = ResultParser.parseResult(rawResult);
-        boolean fromLiveScan = barcode != null;
-        if (fromLiveScan) {
-            // Then not from history, so beep/vibrate and we have an image to draw on
-            beepManager.playBeepSoundAndVibrate();
-            drawResultPoints(barcode, scaleFactor, rawResult);
+
+        if (mListener != null) {
+            mListener.getResult(rawResult.getText());
         }
-//
-        switch (source) {
-            case NATIVE_APP_INTENT:
-                handleDecodeExternally(rawResult, barcode);
-                break;
-            case NONE:
-                if (fromLiveScan) {
-//                    Toast.makeText(mContext, rawResult.getText(),
-//                            Toast.LENGTH_LONG).show();
-                    if (mListener != null) {
-                        mListener.getResult(rawResult.getText());
-                    }
-                    // Wait a moment or else it will scan the same barcode continuously about 3 times
-                    restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-                } else {
-                    handleDecodeInternally(rawResult, result, barcode);
-                }
-                break;
-        }
+//        restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+
+//        ParsedResult result = ResultParser.parseResult(rawResult);
+//        boolean fromLiveScan = barcode != null;
+//        if (fromLiveScan) {
+//            // Then not from history, so beep/vibrate and we have an image to draw on
+//            beepManager.playBeepSoundAndVibrate();
+//            drawResultPoints(barcode, scaleFactor, rawResult);
+//        }
+////
+//        switch (source) {
+//            case NATIVE_APP_INTENT:
+//                handleDecodeExternally(rawResult, barcode);
+//                break;
+//            case NONE:
+//                if (fromLiveScan) {
+////                    Toast.makeText(mContext, rawResult.getText(),
+////                            Toast.LENGTH_LONG).show();
+//                    if (mListener != null) {
+//                        mListener.getResult(rawResult);
+//                    }
+//                    // Wait a moment or else it will scan the same barcode continuously about 3 times
+//                    restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+//                } else {
+//                    handleDecodeInternally(rawResult, result, barcode);
+//                }
+//                break;
+//        }
     }
 
     /**

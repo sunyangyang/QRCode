@@ -9,7 +9,13 @@
                android:layout_height="fill_parent"/>
 
   <com.sunyy.qrcode.mylibrary.ViewfinderView
+      android:visibility="gone"
       android:id="@+id/viewfinder_view"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"/>
+
+  <RelativeLayout
+      android:id="@+id/container"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"/>
 

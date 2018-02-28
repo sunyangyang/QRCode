@@ -34,7 +34,6 @@ import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.common.HybridBinarizer;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.util.Hashtable;
 import java.util.Map;
@@ -129,95 +128,85 @@ final class DecodeHandler extends Handler {
      */
     private void decode(byte[] data, int width, int height) {
         long start = System.currentTimeMillis();
-//        Log.e("XXXXX", "start = " + start);
         Result rawResult = null;
         PlanarYUVLuminanceSource source;
-        if (mFragment != null) {
-            source = mFragment.getCameraManager().buildLuminanceSource(data, width, height);
+        if(this.mFragment != null) {
+            source = this.mFragment.getCameraManager().buildLuminanceSource(data, width, height);
         } else {
-            source = mCommonFragment.getCameraManager().buildLuminanceSource(data, width, height);
+            source = this.mCommonFragment.getCameraManager().buildLuminanceSource(data, width, height);
         }
 
-        if (source != null) {
+        if(source != null) {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
             try {
-                rawResult = multiFormatReader.decodeWithState(bitmap);
-            } catch (ReaderException re) {
-                // continue
+                rawResult = this.multiFormatReader.decodeWithState(bitmap);
+            } catch (ReaderException var26) {
+                ;
             } finally {
-                multiFormatReader.reset();
+                this.multiFormatReader.reset();
             }
         }
 
         Handler handler;
-        if (mFragment != null) {
-            handler = mFragment.getHandler();
+        if(this.mFragment != null) {
+            handler = this.mFragment.getHandler();
         } else {
-            handler = mCommonFragment.getHandler();
+            handler = this.mCommonFragment.getHandler();
         }
 
-        if (rawResult != null) {
-            // Don't log the barcode contents for security.
+        if(rawResult != null) {
             long end = System.currentTimeMillis();
             LogUtils.d(TAG, "Found barcode in " + (end - start) + " ms");
-            if (handler != null) {
+            if(handler != null) {
                 Rect rect;
-                if (mFragment != null) {
-                    rect = mFragment.getCameraManager().getFramingRect();
+                if(this.mFragment != null) {
+                    rect = this.mFragment.getCameraManager().getFramingRect();
                 } else {
-                    rect = mCommonFragment.getCameraManager().getFramingRect();
+                    rect = this.mCommonFragment.getCameraManager().getFramingRect();
                 }
 
-                if (rect != null) {
+                if(rect != null) {
                     Camera camera;
-                    if (mFragment != null) {
-                        camera = mFragment.getCameraManager().getOpenCamera().getCamera();
+                    if(this.mFragment != null) {
+                        camera = this.mFragment.getCameraManager().getOpenCamera().getCamera();
                     } else {
-                        camera = mCommonFragment.getCameraManager().getOpenCamera().getCamera();
+                        camera = this.mCommonFragment.getCameraManager().getOpenCamera().getCamera();
                     }
 
                     Camera.Parameters parameters = camera.getParameters();
                     int maxZoom = parameters.getMaxZoom();
                     int zoom = parameters.getZoom();
-                    if (parameters.isZoomSupported()) {
+                    if(parameters.isZoomSupported()) {
                         ResultPoint[] points = rawResult.getResultPoints();
-                        //相机默认取得横屏
                         float pointY = points[0].getX();
                         float pointX = points[0].getY();
                         float point2Y = points[2].getX();
                         float point2X = points[2].getY();
-//                        for (int i = 0; i < points.length; i++) {
-//                            Log.e("XXXXX", "i = " + i + ", x = " + points[i].getX() + ", y = " + points[i].getY());
-//                        }
-//                        Log.e("XXXXX", "pointX = " + pointX + ", pointY = " + pointY + ", point2X = " + point2X + ", point2Y = " + point2Y +
-//                        ", rect = " + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom);
-//                        Log.e("XXXXX", "isInRect(point1X, point1Y, point2X, point2Y, rect) = " + isInRect(pointX, pointY, point2X, point2Y, rect));
                         int len = Math.max((int)Math.abs(pointX - point2X), (int)Math.abs(pointY - point2Y));
-                        if (len <= rect.width() / 4 && isInRect(pointX, pointY, point2X, point2Y, rect)) {
-//                            if (zoom == 0) {
-//                                zoom = maxZoom / 4;
-//                            } else {
-                                zoom++;
-//                            }
-                            mChange = 1;
-                            if (zoom > maxZoom) {
+                        Message message;
+                        if(len <= rect.width() / 4 && isInRect(pointX, pointY, point2X, point2Y, rect)) {
+                            ++zoom;
+                            this.mChange = 1;
+                            if(zoom > maxZoom) {
                                 zoom = maxZoom;
                             }
-                            if (zoom < maxZoom / 4) {
-                                Message message = new Message();
+
+                            if(zoom < maxZoom / 4) {
+                                message = new Message();
                                 message.what = ZOOM_CHANGE;
                                 message.arg1 = zoom;
                                 message.arg2 = maxZoom;
                                 message.obj = camera;
-                                sendMessageDelayed(message, 100);
+                                this.sendMessageDelayed(message, 100L);
                             } else {
                                 parameters.setZoom(zoom);
                                 camera.setParameters(parameters);
-                                Message message = Message.obtain(handler, DECODE_FAILED);
+                                message = Message.obtain(handler, DECODE_FAILED);
                                 message.sendToTarget();
                             }
                         } else {
-                            Message message = Message.obtain(handler, DECODE_SUCCEEDED, rawResult);
+                            message = Message.obtain(handler, DECODE_SUCCEEDED, rawResult);
                             Bundle bundle = new Bundle();
                             bundleThumbnail(source, bundle);
                             message.setData(bundle);
@@ -238,11 +227,9 @@ final class DecodeHandler extends Handler {
                     message.sendToTarget();
                 }
             }
-        } else {
-            if (handler != null) {
-                Message message = Message.obtain(handler, QRFragment.DECODE_FAILED);
-                message.sendToTarget();
-            }
+        } else if(handler != null) {
+            Message message = Message.obtain(handler, DECODE_FAILED);
+            message.sendToTarget();
         }
     }
 
